@@ -1,4 +1,5 @@
-# ML_Final
+# Machine Learning Final Project
+By: Michael Zeolla, Andrew Fisher, Marko Vila and Reily Siegel
 
 ## Introduction
 For this project the group analyzed the Red Wine Quaity dataset provided. The main goal of the analysis was to properly predict if a specific wine could be classified into "Good" wine or "Bad" wine. The outcome would be a binary classification for the dataset entires. 
