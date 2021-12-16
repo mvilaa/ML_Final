@@ -1,0 +1,95 @@
+data_main = read.table("C:\\Users\\dwolf\\Desktop\\School\\B Term 2021-2022\\Machine Learning\\HW6\\winequality-red.csv",sep=",",header=T)
+head(data_main)
+
+summary(data_main)
+table(data_main$quality)
+
+quality_split = 5.5
+
+library(corrplot)
+library(caret)
+library(class)
+
+plot(data_main$qualit, 1:1599, ylab="Data Index", xlab="Quality")
+
+corrplot(cor(data_main))
+cor(data_main)
+data_main$quality
+data_main$quality = ifelse(data_main$quality > 5.5,1,0)
+data_main$quality <- as.factor(data_main$quality)
+data_main$quality
+
+plot(data_main$qualit, 1:1599, ylab="Data Index", xlab="Quality")
+
+
+
+
+set.seed(19)
+scaled_data = data.frame(scale(data_main[, -c(ncol(data_main))]))
+scaled_data$quality = data_main$quality
+
+trainIndex <- createDataPartition(scaled_data$quality, p = .7,
+                                  list = FALSE,
+                                  times = 1)
+Train <- scaled_data[ trainIndex,]
+Test <- scaled_data[-trainIndex,]
+
+X_Train = Train[-ncol(Train)]
+X_Test = Test[-ncol(Test)]
+
+Train_Label = Train[,ncol(Train), drop = TRUE]
+Test_Label = Test[,ncol(Test), drop = TRUE]
+
+k = 1:100
+accuracy <- rep(NA, 100)
+for(i in k){
+  KNN_Fit = knn(X_Train, X_Test, Train_Label, k=i)
+  conf = confusionMatrix(Test_Label, KNN_Fit)
+  result <- conf$overall['Accuracy']
+  accuracy[i] <- conf$overall['Accuracy']
+}
+
+
+accuracy
+maximum <- which.max(accuracy)
+maximum
+max(accuracy)
+
+
+KNN_Fit =knn(X_Train, X_Test, Train_Label, k=maximum)
+confusionMatrix(Test_Label, KNN_Fit)
+
+
+plot(KNN_Fit, xlab = "Classificaiton", col="red")
+plot(accuracy, xlab="K Value")
+
+
+#Without scaling
+Train <- data_main[ trainIndex,]
+Test <- data_main[-trainIndex,]
+
+X_Train = Train[-ncol(Train)]
+X_Test = Test[-ncol(Test)]
+
+Train_Label = Train[,ncol(Train), drop = TRUE]
+Test_Label = Test[,ncol(Test), drop = TRUE]
+
+k = 1:100
+accuracy <- rep(NA, 100)
+for(i in k){
+  KNN_Fit = knn(X_Train, X_Test, Train_Label, k=i)
+  conf = confusionMatrix(Test_Label, KNN_Fit)
+  result <- conf$overall['Accuracy']
+  accuracy[i] <- conf$overall['Accuracy']
+}
+
+
+accuracy
+maximum <- which.max(accuracy)
+maximum
+max(accuracy)
+
+
+KNN_Fit =knn(X_Train, X_Test, Train_Label, k=maximum)
+confusionMatrix(Test_Label, KNN_Fit)
+
