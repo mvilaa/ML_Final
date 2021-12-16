@@ -1,0 +1,113 @@
+#+TITLE: Quadratic Discriminant Analysis
+#+PROPERTY: header-args:R :session :exports both :results output :prologue "set.seed(1)"
+
+
+First, we set up a test and train dataset. The train dataset contains a randomly
+selected 70% of the data, while the remaining 30% of the data is assigned to the
+test dataset. Here, we define ~quality.high~ as ~TRUE~ when it is higher than
+the mean, and ~FALSE~ otherwise. The original quality column is removed.
+
+#+begin_src R :results output
+library(caTools)
+wine = read.csv("winequality-red.csv", sep=";", header = TRUE)
+wine$quality.high = wine$quality > mean(wine$quality)
+wine = subset(wine, select=-c(quality))
+split = sample.split(wine, SplitRatio=0.7)
+wine.train = subset(wine, split==TRUE)
+wine.test = subset(wine, split==FALSE)
+print(summary(wine))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ fixed.acidity   volatile.acidity  citric.acid    residual.sugar  
+ Min.   : 4.60   Min.   :0.1200   Min.   :0.000   Min.   : 0.900  
+ 1st Qu.: 7.10   1st Qu.:0.3900   1st Qu.:0.090   1st Qu.: 1.900  
+ Median : 7.90   Median :0.5200   Median :0.260   Median : 2.200  
+ Mean   : 8.32   Mean   :0.5278   Mean   :0.271   Mean   : 2.539  
+ 3rd Qu.: 9.20   3rd Qu.:0.6400   3rd Qu.:0.420   3rd Qu.: 2.600  
+ Max.   :15.90   Max.   :1.5800   Max.   :1.000   Max.   :15.500  
+   chlorides       free.sulfur.dioxide total.sulfur.dioxide    density      
+ Min.   :0.01200   Min.   : 1.00       Min.   :  6.00       Min.   :0.9901  
+ 1st Qu.:0.07000   1st Qu.: 7.00       1st Qu.: 22.00       1st Qu.:0.9956  
+ Median :0.07900   Median :14.00       Median : 38.00       Median :0.9968  
+ Mean   :0.08747   Mean   :15.87       Mean   : 46.47       Mean   :0.9967  
+ 3rd Qu.:0.09000   3rd Qu.:21.00       3rd Qu.: 62.00       3rd Qu.:0.9978  
+ Max.   :0.61100   Max.   :72.00       Max.   :289.00       Max.   :1.0037  
+       pH          sulphates         alcohol      quality.high   
+ Min.   :2.740   Min.   :0.3300   Min.   : 8.40   Mode :logical  
+ 1st Qu.:3.210   1st Qu.:0.5500   1st Qu.: 9.50   FALSE:744      
+ Median :3.310   Median :0.6200   Median :10.20   TRUE :855      
+ Mean   :3.311   Mean   :0.6581   Mean   :10.42                  
+ 3rd Qu.:3.400   3rd Qu.:0.7300   3rd Qu.:11.10                  
+ Max.   :4.010   Max.   :2.0000   Max.   :14.90
+#+end_example
+
+Based on the correlation plot in Exploratory Data Analysis, we can see that the
+~quality~ correlates most strongly with ~alcohol~, ~volatile.acidity~,
+~sulphates~, and ~citric.acid~. Thus, we train QDA on these features.
+
+#+begin_src R
+  library("MASS")
+  wine.qda =
+    qda(quality.high ~ alcohol + volatile.acidity + sulphates + citric.acid,
+                  wine.train)
+  print(wine.qda)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Call:
+qda(quality.high ~ alcohol + volatile.acidity + sulphates + citric.acid, 
+    data = wine.train)
+
+Prior probabilities of groups:
+    FALSE      TRUE 
+0.4639175 0.5360825 
+
+Group means:
+        alcohol volatile.acidity sulphates citric.acid
+FALSE  9.945758        0.5902323 0.6183232   0.2324242
+TRUE  10.879516        0.4719580 0.6901224   0.3016608
+#+end_example
+
+We can asses the accuracy of the model via a confusion matrix.
+
+#+begin_src R
+library(caret)
+wine.qda.preds = predict(wine.qda, wine.test)
+confusionMatrix(wine.qda.preds$class, as.factor(wine.test$quality.high))
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Confusion Matrix and Statistics
+
+          Reference
+Prediction FALSE TRUE
+     FALSE   200   90
+     TRUE     49  193
+                                          
+               Accuracy : 0.7387          
+                 95% CI : (0.6992, 0.7756)
+    No Information Rate : 0.532           
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.4804          
+                                          
+ Mcnemar's Test P-Value : 0.0006919       
+                                          
+            Sensitivity : 0.8032          
+            Specificity : 0.6820          
+         Pos Pred Value : 0.6897          
+         Neg Pred Value : 0.7975          
+             Prevalence : 0.4680          
+         Detection Rate : 0.3759          
+   Detection Prevalence : 0.5451          
+      Balanced Accuracy : 0.7426          
+                                          
+       'Positive' Class : FALSE
+#+end_example
+
+We obtain an overall accuracy of ~74%, which is similar to other models trained
+on the same data. 
