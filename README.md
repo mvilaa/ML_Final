@@ -11,7 +11,7 @@ LINK TO GOOGLE DOCS WITH PROJECT REPORT: https://docs.google.com/document/d/1a0n
 
 Logistic Regression - Marko Vila
 
-Quadratic Discriminant Analysis? - Reily Siegel
+Quadratic Discriminant Analysis - Reily Siegel
 
 K-Nearest Neighbors - Michael Zeolla
 
