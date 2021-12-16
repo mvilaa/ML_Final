@@ -1,0 +1,52 @@
+library(caTools)
+library(pROC)
+wine <- read.csv("C:\\Users\\dwolf\\Desktop\\School\\B Term 2021-2022\\Machine Learning\\HW6\\winequality-red.csv")
+wine.cor <-data.frame(cor(wine))
+corrplot(cor(wine))
+
+
+wine$isGood <- ifelse(wine$ quality > 5.5, 1, 0)
+wine$isGood <- as.factor(wine$isGood)
+
+set.seed(80)
+
+split <- sample.split(wine$quality, SplitRatio = .8)
+train <- subset(wine, split == TRUE)
+test <- subset(wine, split == FALSE)
+
+fit <- glm(isGood ~ alcohol+ pH + total.sulfur.dioxide
+           + sulphates + chlorides + volatile.acidity, 
+           data = train, family = binomial(link = 'logit'))
+summary(fit)
+
+
+linear_quality.res = resid(fit) # gets residuals
+linear_quality_1.res = resid(linear_quality_1)
+
+plot(train$alcohol, linear_quality.res) # plot residuals against alcohol variable
+points(train$alcohol, linear_quality_1.res, col="red") # add the residuals for 1-dimension
+
+
+pred <- predict.glm(fit, newdata = test, type = 'response')
+vals <- ifelse(pred > 0.5 , 1, 0)
+
+confusionMatrix(as.factor(vals), as.factor(test$isGood))
+
+fit <- glm(isGood ~ alcohol+ total.sulfur.dioxide
+           + sulphates + volatile.acidity, 
+           data = train, family = binomial(link = 'logit'))
+summary(fit)
+
+pred <- predict.glm(fit, newdata = test, type = 'response')
+vals <- ifelse(pred > 0.5 , 1, 0)
+
+confusionMatrix(as.factor(vals), as.factor(test$isGood))
+
+fit <- glm(isGood ~ volatile.acidity, 
+           data = train, family = binomial(link = 'logit'))
+summary(fit)
+
+pred <- predict.glm(fit, newdata = test, type = 'response')
+vals <- ifelse(pred > 0.5 , 1, 0)
+
+confusionMatrix(as.factor(vals), as.factor(test$isGood))
